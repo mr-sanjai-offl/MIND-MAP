@@ -6,19 +6,38 @@ import matter from 'gray-matter';
 
 const app = express();
 
-// On Vercel, content is relative to the function in /api
-const CONTENT_DIR = path.join(process.cwd(), 'content');
+// On Vercel, files are located relative to the root or the function
+// Use __dirname or process.cwd() carefully
+const CONTENT_DIR = path.resolve(process.cwd(), 'content');
 
 app.use(cors());
 app.use(express.json());
 
+// Diagnostic endpoint
+app.get('/api/debug', (req, res) => {
+    res.json({
+        cwd: process.cwd(),
+        dirname: __dirname,
+        contentDirExists: fs.existsSync(CONTENT_DIR),
+        contentDirFiles: fs.existsSync(CONTENT_DIR) ? fs.readdirSync(CONTENT_DIR) : [],
+        env: process.env.NODE_ENV
+    });
+});
+
 // Get all mindmaps (list of topics)
 app.get('/api/mindmaps', (req, res) => {
     try {
+        console.log('Fetching from:', CONTENT_DIR);
+
         if (!fs.existsSync(CONTENT_DIR)) {
-            console.error('Content directory not found at:', CONTENT_DIR);
-            return res.json([]);
+            console.error('CRITICAL: Content directory missing at:', CONTENT_DIR);
+            return res.status(404).json({
+                error: 'Content directory not found',
+                path: CONTENT_DIR,
+                suggestion: 'Check vercel.json includeFiles config'
+            });
         }
+
         const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.md'));
         const mindmaps = files.map(file => {
             const fullPath = path.join(CONTENT_DIR, file);
@@ -38,9 +57,13 @@ app.get('/api/mindmaps', (req, res) => {
             };
         });
         res.json(mindmaps);
-    } catch (err) {
+    } catch (err: any) {
         console.error('API Error:', err);
-        res.status(500).json({ error: 'Failed to fetch mindmaps' });
+        res.status(500).json({
+            error: 'Failed to fetch mindmaps',
+            message: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 });
 
@@ -53,11 +76,18 @@ app.get('/api/mindmaps/:id', (req, res) => {
             const content = fs.readFileSync(filePath, 'utf8');
             res.send(content);
         } else {
-            res.status(404).json({ error: 'Mindmap not found' });
+            res.status(404).json({
+                error: 'Mindmap not found',
+                requestedId: id,
+                checkedPath: filePath
+            });
         }
-    } catch (err) {
+    } catch (err: any) {
         console.error('API Error:', err);
-        res.status(500).json({ error: 'Failed to fetch mindmap content' });
+        res.status(500).json({
+            error: 'Failed to fetch mindmap content',
+            message: err.message
+        });
     }
 });
 
