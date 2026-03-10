@@ -5,48 +5,52 @@ import path from 'path';
 import matter from 'gray-matter';
 
 const app = express();
-
-// On Vercel, files are located relative to the root or the function
-// Use __dirname or process.cwd() carefully
-const CONTENT_DIR = path.resolve(process.cwd(), 'content');
-
 app.use(cors());
 app.use(express.json());
 
-// Diagnostic endpoint
-app.get('/api/debug', (req, res) => {
+// Pathing: On Vercel, the function runs from /var/task
+// The 'content' directory should be at the root of the project
+const getRepoRoot = () => process.cwd();
+const getContentDir = () => path.join(getRepoRoot(), 'content');
+
+// Diagnostic Root
+app.get('/api', (req, res) => {
     res.json({
-        cwd: process.cwd(),
-        dirname: __dirname,
-        contentDirExists: fs.existsSync(CONTENT_DIR),
-        contentDirFiles: fs.existsSync(CONTENT_DIR) ? fs.readdirSync(CONTENT_DIR) : [],
-        env: process.env.NODE_ENV
+        status: 'online',
+        message: "Sanjai's Mind Map API",
+        time: new Date().toISOString()
     });
 });
 
-// Get all mindmaps (list of topics)
+app.get('/api/debug', (req, res) => {
+    const root = getRepoRoot();
+    const content = getContentDir();
+    res.json({
+        cwd: root,
+        dirname: __dirname,
+        contentPath: content,
+        contentExists: fs.existsSync(content),
+        contentFiles: fs.existsSync(content) ? fs.readdirSync(content) : [],
+        node_version: process.version
+    });
+});
+
 app.get('/api/mindmaps', (req, res) => {
     try {
-        console.log('Fetching from:', CONTENT_DIR);
-
-        if (!fs.existsSync(CONTENT_DIR)) {
-            console.error('CRITICAL: Content directory missing at:', CONTENT_DIR);
-            return res.status(404).json({
-                error: 'Content directory not found',
-                path: CONTENT_DIR,
-                suggestion: 'Check vercel.json includeFiles config'
-            });
+        const contentDir = getContentDir();
+        if (!fs.existsSync(contentDir)) {
+            return res.status(404).json({ error: 'Content directory missing', path: contentDir });
         }
 
-        const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.md'));
+        const files = fs.readdirSync(contentDir).filter(f => f.endsWith('.md'));
         const mindmaps = files.map(file => {
-            const fullPath = path.join(CONTENT_DIR, file);
-            const content = fs.readFileSync(fullPath, 'utf8');
-            const { data } = matter(content);
+            const fullPath = path.join(contentDir, file);
+            const fileData = fs.readFileSync(fullPath, 'utf8');
+            const { data } = matter(fileData);
 
             let title = data.title;
             if (!title) {
-                const match = content.match(/^#\s+(.*)/m);
+                const match = fileData.match(/^#\s+(.*)/m);
                 title = match ? match[1].trim() : file.replace('.md', '');
             }
 
@@ -58,36 +62,23 @@ app.get('/api/mindmaps', (req, res) => {
         });
         res.json(mindmaps);
     } catch (err: any) {
-        console.error('API Error:', err);
-        res.status(500).json({
-            error: 'Failed to fetch mindmaps',
-            message: err.message,
-            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-        });
+        res.status(500).json({ error: 'Internal Server Error', detail: err.message });
     }
 });
 
-// Get specific mindmap content
 app.get('/api/mindmaps/:id', (req, res) => {
-    const { id } = req.params;
-    const filePath = path.join(CONTENT_DIR, `${id}.md`);
     try {
+        const { id } = req.params;
+        const filePath = path.join(getContentDir(), `${id}.md`);
+
         if (fs.existsSync(filePath)) {
             const content = fs.readFileSync(filePath, 'utf8');
             res.send(content);
         } else {
-            res.status(404).json({
-                error: 'Mindmap not found',
-                requestedId: id,
-                checkedPath: filePath
-            });
+            res.status(404).json({ error: 'Not Found', id });
         }
     } catch (err: any) {
-        console.error('API Error:', err);
-        res.status(500).json({
-            error: 'Failed to fetch mindmap content',
-            message: err.message
-        });
+        res.status(500).json({ error: 'Internal Server Error', detail: err.message });
     }
 });
 
