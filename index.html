@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Security Insights | Sanjai's_Network</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="description" content="AI in Cybersecurity — Interactive Mind Maps by Sanjai's_Network. 2026 Edition.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+
+    <!-- MARKDOWN & MATH RENDERING -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+</head>
+
+<body>
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- CUSTOM CURSOR -->
+    <div class="cursor-dot" id="cursorDot"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+        <div class="topbar-brand" id="homeLink">
+            <div class="brand-logo-alt">🛡️</div>
+            <div>
+                <span class="brand-name">Sanjai's_Network</span>
+                <span class="brand-sub">// SECURING THE FUTURE — 2026</span>
+            </div>
+        </div>
+        <span class="topbar-title" id="currentTopic">Select a Topic</span>
+        <div class="topbar-actions">
+            <button class="btn-action" id="helpBtn">❓ Help</button>
+            <button class="btn-action" id="backBtn" style="display: none;">🏠 Home</button>
+            <!-- SEARCH -->
+            <div class="search-wrap" id="searchWrap" style="display: none;">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search nodes..."
+                    spellcheck="false">
+                <span class="search-icon">⌕</span>
+            </div>
+            <button class="btn-action" id="resetBtn" title="Reset (Space)" style="display: none;">⟲ Reset</button>
+            <button class="btn-action" id="expandAllBtn" title="Toggle all (E)" style="display: none;">Expand
+                All</button>
+        </div>
+    </header>
+
+    <!-- HELP MODAL -->
+    <div class="help-overlay" id="helpOverlay">
+        <div class="help-modal">
+            <button class="help-close" id="helpClose">&times;</button>
+            <h2 class="help-title">Advanced Markdown Guide</h2>
+            <div class="help-content">
+                <p>This CMS now supports full rich-text rendering via <code>marked</code> and <code>KaTeX</code>.</p>
+
+                <h3>Project Structure</h3>
+                <p>Use <code># Header</code> for the root, <code>## Header</code> for categories, and
+                    <code>### Header</code> or lists for topics.
+                </p>
+                <pre>## Networking 🌐
+- [TCP/IP](https://link.com)
+  - Handshake $Syn \to Ack$
+  - Flow Control</pre>
+
+                <h3>Rich Features</h3>
+                <ul>
+                    <li><strong>Math</strong>: <code>$E=mc^2$</code></li>
+                    <li><strong>Tables</strong>: GH flavored grid tables.</li>
+                    <li><strong>Checkboxes</strong>: <code>- [x] Item done</code></li>
+                    <li><strong>Code</strong>: <code>`inline`</code> or <code>```blocks```</code>.</li>
+                </ul>
+
+                <h3>Visuals</h3>
+                <p>Emojis at the start/end of headers become icons automatically. Images <code>![](url)</code> are
+                    rendered in details.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOME / SELECTION SCREEN -->
+    <main class="home-container" id="homeView">
+        <h1 class="home-title">Cyber Security Insights</h1>
+        <div class="topic-grid" id="topicGrid">
+            <!-- Loading topics... -->
+        </div>
+    </main>
+
+    <!-- MIND MAP VIEWPORT (Restored Old Style Struct) -->
+    <div class="mm-viewport" id="mmViewport" style="display: none;">
+        <div class="mm-canvas" id="mmCanvas">
+            <svg class="mm-svg" id="mmSvg"></svg>
+
+            <!-- ===== ROOT NODE ===== -->
+            <div class="mm-root" id="rootNode">
+                <div class="mm-root-icon-wrap">🚀</div>
+                <div class="mm-root-text">
+                    <div class="mm-root-title" id="rootTitle">Topic Title</div>
+                    <div class="mm-root-sub">Sanjai's_Network // Interactive Mind Map</div>
+                </div>
+            </div>
+
+            <!-- ===== BRANCHES CONTAINER ===== -->
+            <div class="mm-branches" id="mmBranches">
+                <!-- Branches will be injected here -->
+            </div>
+        </div>
+
+        <!-- ZOOM LEVEL OVERLAY -->
+        <div class="zoom-controls" id="zoomControls" style="display: none;">
+            <button class="zoom-btn" id="zoomOut">−</button>
+            <span class="zoom-level" id="zoomLevel">100%</span>
+            <button class="zoom-btn" id="zoomIn">+</button>
+        </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <footer class="status-bar">
+        <div class="status-left">
+            <span id="statusCounts">0 topics</span>
+        </div>
+        <div class="status-right">
+            <div class="status-keys">
+                <kbd>SPACE</kbd> Reset ·
+                <kbd>E</kbd> Expand All ·
+                <kbd>+/-</kbd> Zoom
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
