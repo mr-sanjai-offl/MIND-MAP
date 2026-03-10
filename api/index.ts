@@ -8,36 +8,35 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Pathing: On Vercel, the function runs from /var/task
-// The 'content' directory should be at the root of the project
-const getRepoRoot = () => process.cwd();
-const getContentDir = () => path.join(getRepoRoot(), 'content');
+// Hardened Path Resolution for Vercel
+const getCONTENT_DIR = () => {
+    // Strategy 1: process.cwd()
+    const cwdPath = path.join(process.cwd(), 'content');
+    if (fs.existsSync(cwdPath)) return cwdPath;
 
-// Diagnostic Root
-app.get('/api', (req, res) => {
-    res.json({
-        status: 'online',
-        message: "Sanjai's Mind Map API",
-        time: new Date().toISOString()
-    });
-});
+    // Strategy 2: Relative to __dirname (if available in this env)
+    try {
+        const relPath = path.resolve('./content');
+        if (fs.existsSync(relPath)) return relPath;
+    } catch (e) { }
+
+    return cwdPath; // Fallback
+};
 
 app.get('/api/debug', (req, res) => {
-    const root = getRepoRoot();
-    const content = getContentDir();
+    const contentDir = getCONTENT_DIR();
     res.json({
-        cwd: root,
-        dirname: __dirname,
-        contentPath: content,
-        contentExists: fs.existsSync(content),
-        contentFiles: fs.existsSync(content) ? fs.readdirSync(content) : [],
-        node_version: process.version
+        cwd: process.cwd(),
+        contentDir,
+        exists: fs.existsSync(contentDir),
+        files: fs.existsSync(contentDir) ? fs.readdirSync(contentDir) : [],
+        node: process.version
     });
 });
 
 app.get('/api/mindmaps', (req, res) => {
     try {
-        const contentDir = getContentDir();
+        const contentDir = getCONTENT_DIR();
         if (!fs.existsSync(contentDir)) {
             return res.status(404).json({ error: 'Content directory missing', path: contentDir });
         }
@@ -61,15 +60,15 @@ app.get('/api/mindmaps', (req, res) => {
             };
         });
         res.json(mindmaps);
-    } catch (err: any) {
-        res.status(500).json({ error: 'Internal Server Error', detail: err.message });
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
     }
 });
 
 app.get('/api/mindmaps/:id', (req, res) => {
     try {
         const { id } = req.params;
-        const filePath = path.join(getContentDir(), `${id}.md`);
+        const filePath = path.join(getCONTENT_DIR(), `${id}.md`);
 
         if (fs.existsSync(filePath)) {
             const content = fs.readFileSync(filePath, 'utf8');
@@ -77,8 +76,8 @@ app.get('/api/mindmaps/:id', (req, res) => {
         } else {
             res.status(404).json({ error: 'Not Found', id });
         }
-    } catch (err: any) {
-        res.status(500).json({ error: 'Internal Server Error', detail: err.message });
+    } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
     }
 });
 
