@@ -15,15 +15,15 @@ markmap:
   - Automation of threat detection
 
 ## Core Technologies
-  ### Machine Learning
+  ## Machine Learning
     - Supervised Learning
     - Unsupervised Learning
     - Reinforcement Learning
 
 ### Deep Learning
-- Neural Networks
-- CNN for malware detection
-- RNN for anomaly detection
+  - Neural Networks
+  - CNN for malware detection
+  - RNN for anomaly detection
 
 ### Natural Language Processing
 - Threat intelligence analysis
