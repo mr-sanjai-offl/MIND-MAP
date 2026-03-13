@@ -9,16 +9,16 @@ markmap:
 # AI in Cybersecurity 🛡️
 
 ## Introduction
-- Definition of Artificial Intelligence in security
-- Need for AI in modern cybersecurity
-- Handling large-scale cyber threats
-- Automation of threat detection
+  - Definition of Artificial Intelligence in security
+  - Need for AI in modern cybersecurity
+  - Handling large-scale cyber threats
+  - Automation of threat detection
 
 ## Core Technologies
-### Machine Learning
-- Supervised Learning
-- Unsupervised Learning
-- Reinforcement Learning
+  ### Machine Learning
+    - Supervised Learning
+    - Unsupervised Learning
+    - Reinforcement Learning
 
 ### Deep Learning
 - Neural Networks
